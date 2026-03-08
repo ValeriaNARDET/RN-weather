@@ -1,4 +1,3 @@
 export interface UserState {
-    email: string;
-    name: string;
+    city: string;
 }

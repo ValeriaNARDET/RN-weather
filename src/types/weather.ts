@@ -1,4 +1,7 @@
 export interface WeatherState {
   weather: any;
-  city: string;
+  temperature: number | null;
+  condition: string | null;
+  loading: boolean;
+  error: string | null;
 }
