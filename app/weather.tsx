@@ -11,9 +11,11 @@ const WeatherPage = () => {
   const { city, coords } = useSelector((state: RootState) => state.user);
   const { weather, temperature, condition, loading, error } = useSelector((state: RootState) => state.weather);
   
+
   useEffect(() => {
     dispatch(fetchWeather(coords));
   }, [])
+
 
   return (
       <View style={styles.container}>

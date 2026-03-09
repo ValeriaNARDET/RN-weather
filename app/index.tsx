@@ -1,48 +1,32 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useState, useEffect } from "react";
+import { AppDispatch } from "@store/store";
 import { router } from "expo-router";
 import Dropdown from 'react-native-input-select';
-import { RootState, AppDispatch } from '@store/store';
-import { setCity, setCoords } from "@store/user/userSlice";
-import * as Location from 'expo-location';
+import { RootState } from '@store/store';
 import citiesData from '../cities.json';
+import { getLocalCoords, saveToStorage, saveUserGeo } from 'helpers/getGeo';
+import loadCache from 'helpers/cache';
 
 
 const Index = () => {
   const { city } = useSelector((state: RootState) => state.user);
+  const [selectedCityId, setSelectedCityId] = useState(Number);
   const dispatch = useDispatch<AppDispatch>();
 
-  const [selectedCityId, setSelectedCityId] = useState(Number);
-
   useEffect(() => {
-    (async () => {
-      const cityPlaceholder = "Kyiv";
-
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        return cityPlaceholder;
-      }
-
-      let curLocation = await Location.getCurrentPositionAsync({});
-      dispatch(setCoords({ lat: curLocation.coords.latitude, lon: curLocation.coords.longitude }));
-
-      const rGeocode = await Location.reverseGeocodeAsync(curLocation.coords);
-      const city =  (rGeocode.length > 0 && !!rGeocode[0].city) ? rGeocode[0].city : cityPlaceholder;
-      
-      dispatch(setCity(city));
-    })();
+    loadCache(dispatch);
+    getLocalCoords(dispatch);
   }, []);
 
 
   const handleSelect = (id: number) => {
     setSelectedCityId(id);
     const ind: number = citiesData.findIndex((city) => city.id === id);
-    const { lat, lon } = citiesData[ind];
 
-    dispatch(setCity(citiesData[ind].name));
-    dispatch(setCoords({ lat, lon }));
-
+    saveUserGeo(dispatch, citiesData[ind].name, citiesData[ind])
+    saveToStorage(city, citiesData[ind]);
   }
 
   const handlePress = () => {
